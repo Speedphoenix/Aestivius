@@ -1,4 +1,6 @@
 <resources>
-    <string name="app_name">Aestivius</string>
+    <string name="app_name" translatable="false">Aestivius</string>
     <string name="action_settings">Settings</string>
+    <string name="create_match">Create new match information</string>
+    <string name="view_previous_matches">View previous matches</string>
 </resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">Paramètres</string>
+    <string name="create_match">Enregistrer un nouveau match</string>
+    <string name="view_previous_matches">Voir les matchs précédents</string>
+</resources>
