@@ -12,6 +12,7 @@ import com.speedphoenix.aestivius.MatchFragment.OnListFragmentInteractionListene
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import android.os.Handler;
 /**
@@ -19,13 +20,13 @@ import android.os.Handler;
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyMatchRecyclerViewAdapter extends RecyclerView.Adapter<MyMatchRecyclerViewAdapter.ViewHolder> {
+public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecyclerViewAdapter.ViewHolder> {
 
     private List<Match> mValues;
     private final OnListFragmentInteractionListener mListener;
     private Handler handler;
 
-    public MyMatchRecyclerViewAdapter(OnListFragmentInteractionListener listener) {
+    public MatchRecyclerViewAdapter(OnListFragmentInteractionListener listener) {
         mListener = listener;
         mValues = new ArrayList<>();
         handler = new Handler();
@@ -40,11 +41,12 @@ public class MyMatchRecyclerViewAdapter extends RecyclerView.Adapter<MyMatchRecy
     }
 
     public void refreshList() {
-        final MyMatchRecyclerViewAdapter adapter = this;
+        final MatchRecyclerViewAdapter adapter = this;
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 mValues = Arrays.asList(MainActivity.getDao().getAll());
+                Collections.reverse(mValues);
                 handler.post(new Runnable() {
                     @Override
                     public void run() {

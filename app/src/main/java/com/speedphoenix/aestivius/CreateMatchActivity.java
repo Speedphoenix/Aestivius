@@ -135,11 +135,12 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
     public void onButtonClick(View view) {
         switch (view.getId()) {
             case R.id.validatebutton:
-                String loser = ((TextView) findViewById(R.id.loserinput)).getText().toString();
-                String winner = ((TextView) findViewById(R.id.winnerinput)).getText().toString();
-                String score = ((TextView) findViewById(R.id.scoreinput)).getText().toString();
+                String loser = loserView.getText().toString();
+                String winner = winnerView.getText().toString();
+                String score = scoreView.getText().toString();
+                location = locationView.getText().toString();
 
-                if (loser.isEmpty() || winner.isEmpty() || score.isEmpty()) {
+                if (loser.isEmpty() || winner.isEmpty() || score.isEmpty() || location.isEmpty()) {
                     break;
                 }
 
