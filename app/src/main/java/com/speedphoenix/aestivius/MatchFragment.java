@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,6 +28,7 @@ public class MatchFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    private MyMatchRecyclerViewAdapter adapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -38,7 +40,6 @@ public class MatchFragment extends Fragment {
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
     public static MatchFragment newInstance(int columnCount) {
-        System.err.println("hey2");
 
         MatchFragment fragment = new MatchFragment();
         Bundle args = new Bundle();
@@ -50,7 +51,6 @@ public class MatchFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        System.err.println("hey");
 
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
@@ -61,7 +61,6 @@ public class MatchFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_match_list, container, false);
-        System.err.println("hey0");
 
         // Set the adapter
         if (view instanceof RecyclerView) {
@@ -72,9 +71,19 @@ public class MatchFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyMatchRecyclerViewAdapter(Match.DUMMYLIST, mListener));
+            adapter = new MyMatchRecyclerViewAdapter(mListener);
+            recyclerView.setAdapter(adapter);
+            recyclerView.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
         }
+        else
+            throw new RuntimeException("Who coded this?");
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        adapter.refreshList();
     }
 
 
@@ -107,6 +116,6 @@ public class MatchFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(Match item);
+        void onListFragmentInteraction(Match match);
     }
 }

@@ -8,7 +8,8 @@
         android:id="@+id/createMatchButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/create_match" />
+        android:text="@string/create_match"
+        android:onClick="onButtonClick"/>
 
     <fragment android:name="com.speedphoenix.aestivius.MatchFragment"
         android:id="@+id/past_matches_list"

@@ -3,4 +3,7 @@
     <string name="action_settings">Paramètres</string>
     <string name="create_match">Enregistrer un nouveau match</string>
     <string name="view_previous_matches">Voir les matchs précédents</string>
+    <string name="loser_label">Perdant: </string>
+    <string name="winner_label">Gagnant: </string>
+    <string name="validate">Validater</string>
 </resources>

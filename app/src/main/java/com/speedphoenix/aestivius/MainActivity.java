@@ -1,5 +1,6 @@
 package com.speedphoenix.aestivius;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -8,6 +9,7 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
 import android.view.View;
 import android.view.Menu;
@@ -15,9 +17,19 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity implements MatchFragment.OnListFragmentInteractionListener {
 
+    public static final int LOCAL_MATCHES_COUNT = 5;
+    public static final String DATABASE_NAME = "matches";
+    private static AppDatabase db = null;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (db == null)
+            db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, DATABASE_NAME)
+                    .fallbackToDestructiveMigration()
+                    .build();
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -35,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements MatchFragment.OnL
     public void onButtonClick(View view) {
         switch (view.getId()) {
             case R.id.createMatchButton:
+                Intent intent = new Intent(this, CreateMatchActivity.class);
+                startActivity(intent);
                 break;
         }
     }
@@ -62,7 +76,15 @@ public class MainActivity extends AppCompatActivity implements MatchFragment.OnL
     }
 
     @Override
-    public void onListFragmentInteraction(Match item) {
-        
+    public void onListFragmentInteraction(Match match) {
+
+    }
+
+    public static AppDatabase getDb() {
+        return db;
+    }
+
+    public static MatchDao getDao() {
+        return db.matchDao();
     }
 }

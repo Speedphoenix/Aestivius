@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name" translatable="false">Aestivius</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_create_match" translatable="false">CreateMatchActivity</string>
     <string name="create_match">Create new match information</string>
     <string name="view_previous_matches">View previous matches</string>
+    <string name="loser_label">Loser: </string>
+    <string name="winner_label">Winner: </string>
+    <string name="score_label" translatable="false">Score: </string>
+    <string name="validate">Validate</string>
 </resources>

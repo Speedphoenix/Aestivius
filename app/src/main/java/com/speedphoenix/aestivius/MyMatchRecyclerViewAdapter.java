@@ -2,6 +2,7 @@ package com.speedphoenix.aestivius;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,8 +10,10 @@ import android.widget.TextView;
 
 import com.speedphoenix.aestivius.MatchFragment.OnListFragmentInteractionListener;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-
+import android.os.Handler;
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Match} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
@@ -18,14 +21,15 @@ import java.util.List;
  */
 public class MyMatchRecyclerViewAdapter extends RecyclerView.Adapter<MyMatchRecyclerViewAdapter.ViewHolder> {
 
-    private final List<Match> mValues;
+    private List<Match> mValues;
     private final OnListFragmentInteractionListener mListener;
+    private Handler handler;
 
-    public MyMatchRecyclerViewAdapter(List<Match> items, OnListFragmentInteractionListener listener) {
-        System.err.println("hey7");
-
-        mValues = items;
+    public MyMatchRecyclerViewAdapter(OnListFragmentInteractionListener listener) {
         mListener = listener;
+        mValues = new ArrayList<>();
+        handler = new Handler();
+        refreshList();
     }
 
     @Override
@@ -35,9 +39,24 @@ public class MyMatchRecyclerViewAdapter extends RecyclerView.Adapter<MyMatchRecy
         return new ViewHolder(view);
     }
 
+    public void refreshList() {
+        final MyMatchRecyclerViewAdapter adapter = this;
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                mValues = Arrays.asList(MainActivity.getDao().getAll());
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        });
+    }
+
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        System.err.println("hey5");
 
         holder.mItem = mValues.get(position);
 

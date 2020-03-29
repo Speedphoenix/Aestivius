@@ -8,6 +8,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "match")
 public class Match {
 
     public final static List<Match> DUMMYLIST = new ArrayList<>();
@@ -33,7 +39,12 @@ public class Match {
         int loser = position * 10 + random.nextInt(10);
         int winscore = 10 + random.nextInt(5);
         int loserscore = random.nextInt(9);
-        return new Match(new Date(), "Quai de Grenelle", String.valueOf(winner), String.valueOf(loser), String.valueOf(winscore) + " : " + String.valueOf(loserscore));
+        String denom = random.nextBoolean() ? "Mr. " : "Ms. ";
+        return new Match(new Date(),
+                "Quai de Grenelle",
+                denom + String.valueOf(winner),
+                denom + String.valueOf(loser),
+                String.valueOf(winscore) + " : " + String.valueOf(loserscore));
     }
 
     private static String makeDetails(int position) {
@@ -45,10 +56,22 @@ public class Match {
         return builder.toString();
     }
 
+    @PrimaryKey(autoGenerate = true)
+    private int id;
+
+    @NonNull
     private Date date;
+
+    @NonNull
     private String location;
+
+    @NonNull
     private String winner;
+
+    @NonNull
     private String loser;
+
+    @NonNull
     private String finalScore;
 
     public Match(Date date, String location, String winner, String loser, String finalScore) {
@@ -97,5 +120,13 @@ public class Match {
 
     public void setFinalScore(String finalScore) {
         this.finalScore = finalScore;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
