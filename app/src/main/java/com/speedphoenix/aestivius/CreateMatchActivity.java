@@ -83,7 +83,7 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
             locatedlocation = locationManager.getLastKnownLocation(provider);
 
             // Initialize the location fields
-            if (location != null) {
+            if (locatedlocation != null) {
                 useLocation();
             }
         }
@@ -105,7 +105,7 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
                 locatedlocation = locationManager.getLastKnownLocation(provider);
 
                 // Initialize the location fields
-                if (location != null) {
+                if (locatedlocation != null) {
                     useLocation();
                 }
             }
