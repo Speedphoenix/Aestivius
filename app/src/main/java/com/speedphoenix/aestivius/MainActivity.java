@@ -8,7 +8,6 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 import android.view.View;
@@ -19,16 +18,21 @@ public class MainActivity extends AppCompatActivity implements MatchFragment.OnL
 
     public static final int LOCAL_MATCHES_COUNT = 5;
     public static final String DATABASE_NAME = "matches";
-    private static AppDatabase db = null;
-
+    //private static AppRoomDatabase db = null;
+    private static MatchDBHelper dbHelper = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        /*
         if (db == null)
-            db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, DATABASE_NAME)
+            db = Room.databaseBuilder(getApplicationContext(), AppRoomDatabase.class, DATABASE_NAME)
                     .fallbackToDestructiveMigration()
                     .build();
+        */
+
+        if (dbHelper == null)
+            dbHelper = new MatchDBHelper(this);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -80,11 +84,17 @@ public class MainActivity extends AppCompatActivity implements MatchFragment.OnL
 
     }
 
-    public static AppDatabase getDb() {
+    public static MatchDBHelper getDbHelper() {
+        return dbHelper;
+    }
+
+    /*
+    public static AppRoomDatabase getDb() {
         return db;
     }
 
     public static MatchDao getDao() {
         return db.matchDao();
     }
+    */
 }

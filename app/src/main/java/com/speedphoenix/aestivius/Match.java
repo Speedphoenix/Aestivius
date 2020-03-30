@@ -1,6 +1,7 @@
 package com.speedphoenix.aestivius;
 
 import android.location.Location;
+import android.provider.BaseColumns;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Random;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "match")
@@ -18,7 +20,6 @@ public class Match {
 
     public final static List<Match> DUMMYLIST = new ArrayList<>();
     private static Random random = new Random();
-
 
     private static final int COUNT = 25;
 
@@ -57,7 +58,7 @@ public class Match {
     }
 
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private long id;
 
     @NonNull
     private Date date;
@@ -82,12 +83,26 @@ public class Match {
         this.finalScore = finalScore;
     }
 
+    @Ignore
+    public Match(Date date, String location, String winner, String loser, String finalScore, long id) {
+        this(date, location, winner, loser, finalScore);
+        this.id = id;
+    }
+
     public Date getDate() {
         return date;
     }
 
+    public long getDateTimestamp() {
+        return date.getTime();
+    }
+
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public void setDateFromTimestamp(long value) {
+        this.date = new Date(value);
     }
 
     public String getLocation() {
@@ -122,11 +137,21 @@ public class Match {
         this.finalScore = finalScore;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
+    }
+
+    /* Inner class that defines the table contents */
+    public static class MatchEntry implements BaseColumns {
+        public static final String TABLE_NAME = "match";
+        public static final String COLUMN_NAME_DATE = "date";
+        public static final String COLUMN_NAME_LOCATION = "location";
+        public static final String COLUMN_NAME_WINNER = "winner";
+        public static final String COLUMN_NAME_LOSER = "loser";
+        public static final String COLUMN_NAME_SCORE = "score";
     }
 }

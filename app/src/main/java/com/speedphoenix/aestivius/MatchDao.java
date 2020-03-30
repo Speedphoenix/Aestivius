@@ -7,6 +7,8 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
+// Meant to use SQLite directly rather than Room
+@Deprecated
 @Dao
 public interface MatchDao {
 

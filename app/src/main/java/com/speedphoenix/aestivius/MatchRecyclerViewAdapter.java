@@ -45,7 +45,7 @@ public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecycler
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                mValues = Arrays.asList(MainActivity.getDao().getAll());
+                mValues = MainActivity.getDbHelper().getAllMatches();
                 Collections.reverse(mValues);
                 handler.post(new Runnable() {
                     @Override

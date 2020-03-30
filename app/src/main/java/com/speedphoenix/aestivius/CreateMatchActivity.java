@@ -150,20 +150,20 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
                     @Override
                     public void run() {
 
-                        MatchDao dao = MainActivity.getDao();
-                        Match[] matches = dao.getAll();
+                        MatchDBHelper helper = MainActivity.getDbHelper();
+                        List<Match> matches = helper.getAllMatches();
                         // We don't want to have more than 5 matches saved locally
-                        if (matches.length >= MainActivity.LOCAL_MATCHES_COUNT) {
-                            Match inter = matches[0];
-                            for (int i = 1; i < matches.length; i++) {
-                                if (matches[i].getDate().before(inter.getDate())) {
-                                    inter = matches[i];
+                        if (matches.size() >= MainActivity.LOCAL_MATCHES_COUNT) {
+                            Match inter = matches.get(0);
+                            for (int i = 1; i < matches.size(); i++) {
+                                if (matches.get(i).getDate().before(inter.getDate())) {
+                                    inter = matches.get(i);
                                 }
                             }
-                            dao.deleteMatch(inter);
+                            helper.deleteMatch(inter.getId());
                         }
 
-                        dao.insertMatch(newMatch);
+                        helper.insertMatch(newMatch);
 
                         finish();
                     }
