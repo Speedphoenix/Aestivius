@@ -13,6 +13,13 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -24,8 +31,11 @@ import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.intellij.lang.annotations.JdkConstants;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Date;
@@ -145,6 +155,7 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
                 }
 
                 final Match newMatch = new Match(date, location, winner, loser, score);
+                saveMatchExternally(newMatch);
 
                 AsyncTask.execute(new Runnable() {
                     @Override
@@ -170,6 +181,39 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
                 });
                 break;
         }
+    }
+
+    public void saveMatchExternally(Match match) {
+        final Context context = this.getApplicationContext();
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        String url = MainActivity.EXTERNAL_DB_URL + MainActivity.getPhoneID();
+
+        JSONObject object = new JSONObject();
+        try {
+            //input your API parameters
+            object.put("_id", match.getId());
+            object.put("date", match.getDateTimestamp());
+            object.put("location", match.getLocation());
+            object.put("winner", match.getWinner());
+            object.put("loser", match.getLoser());
+            object.put("score", match.getFinalScore());
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return;
+        }
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, url, object,
+            new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    System.out.println("Created match");
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    System.err.println(error.toString());
+                }
+        });
+        requestQueue.add(jsonObjectRequest);
     }
 
     @Override

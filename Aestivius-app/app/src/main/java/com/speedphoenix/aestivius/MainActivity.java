@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity implements MatchFragment.OnL
 
     public static final int LOCAL_MATCHES_COUNT = 5;
     public static final String DATABASE_NAME = "matches";
+    public static final String EXTERNAL_DB_URL = "http://192.168.0.25:8096/match/";
     //private static AppRoomDatabase db = null;
     private static MatchDBHelper dbHelper = null;
 
@@ -82,6 +83,10 @@ public class MainActivity extends AppCompatActivity implements MatchFragment.OnL
     @Override
     public void onListFragmentInteraction(Match match) {
 
+    }
+
+    public static String getPhoneID() {
+        return "montel";
     }
 
     public static MatchDBHelper getDbHelper() {

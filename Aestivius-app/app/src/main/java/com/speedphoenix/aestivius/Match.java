@@ -16,7 +16,7 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "match")
-public class Match {
+public class Match implements Comparable<Match> {
 
     public final static List<Match> DUMMYLIST = new ArrayList<>();
     private static Random random = new Random();
@@ -143,6 +143,17 @@ public class Match {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    @Override
+    public int compareTo(Match other) {
+        long diff = this.getDateTimestamp() - other.getDateTimestamp();
+        if (diff > 0)
+            return 1;
+        else if (diff < 0)
+            return -1;
+        else
+            return 0;
     }
 
     /* Inner class that defines the table contents */

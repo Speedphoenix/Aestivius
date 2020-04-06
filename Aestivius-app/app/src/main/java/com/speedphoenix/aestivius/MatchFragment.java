@@ -69,7 +69,7 @@ public class MatchFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            adapter = new MatchRecyclerViewAdapter(mListener);
+            adapter = new MatchRecyclerViewAdapter(mListener, getContext().getApplicationContext());
             recyclerView.setAdapter(adapter);
             recyclerView.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
         }
@@ -81,7 +81,7 @@ public class MatchFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        adapter.refreshList();
+        adapter.refreshLocalList();
     }
 
 
