@@ -1,5 +1,6 @@
 package com.speedphoenix.aestivius;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -10,6 +11,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.room.Room;
 
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements MatchFragment.OnL
     public static final String EXTERNAL_DB_URL = "http://192.168.0.25:8096/match/";
     //private static AppRoomDatabase db = null;
     private static MatchDBHelper dbHelper = null;
+    private static String phoneId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +40,9 @@ public class MainActivity extends AppCompatActivity implements MatchFragment.OnL
 
         if (dbHelper == null)
             dbHelper = new MatchDBHelper(this);
+
+        if (phoneId == null)
+            phoneId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -86,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements MatchFragment.OnL
     }
 
     public static String getPhoneID() {
-        return "montel";
+        return phoneId;
     }
 
     public static MatchDBHelper getDbHelper() {
