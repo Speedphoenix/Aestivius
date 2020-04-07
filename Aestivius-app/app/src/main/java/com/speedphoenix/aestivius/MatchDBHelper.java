@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 
 
 public class MatchDBHelper extends SQLiteOpenHelper {
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "matchdb";
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE IF NOT EXISTS " + Match.MatchEntry.TABLE_NAME + " (" +
@@ -25,7 +25,8 @@ public class MatchDBHelper extends SQLiteOpenHelper {
                     MatchEntry.COLUMN_NAME_WINNER + " TEXT," +
                     MatchEntry.COLUMN_NAME_DATE + " INTEGER," +
                     MatchEntry.COLUMN_NAME_LOCATION + " TEXT," +
-                    MatchEntry.COLUMN_NAME_SCORE + " TEXT" +
+                    MatchEntry.COLUMN_NAME_SCORE + " TEXT," +
+                    MatchEntry.COLUMN_NAME_PICTURE + " TEXT" +
                     ")";
 
 
@@ -62,6 +63,7 @@ public class MatchDBHelper extends SQLiteOpenHelper {
         values.put(MatchEntry.COLUMN_NAME_LOCATION, what.getLocation());
         values.put(MatchEntry.COLUMN_NAME_DATE, what.getDateTimestamp());
         values.put(MatchEntry.COLUMN_NAME_SCORE, what.getFinalScore());
+        values.put(MatchEntry.COLUMN_NAME_PICTURE, what.getPicturePath());
 
         // Insert the new row, returning the primary key value of the new row
         long newRowId = db.insert(MatchEntry.TABLE_NAME, null, values);
@@ -81,6 +83,7 @@ public class MatchDBHelper extends SQLiteOpenHelper {
                     cursor.getString(cursor.getColumnIndexOrThrow(MatchEntry.COLUMN_NAME_WINNER)),
                     cursor.getString(cursor.getColumnIndexOrThrow(MatchEntry.COLUMN_NAME_LOSER)),
                     cursor.getString(cursor.getColumnIndexOrThrow(MatchEntry.COLUMN_NAME_SCORE)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(MatchEntry.COLUMN_NAME_PICTURE)),
                     cursor.getLong(cursor.getColumnIndexOrThrow(MatchEntry._ID))));
         }
         cursor.close();

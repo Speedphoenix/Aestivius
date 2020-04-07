@@ -30,6 +30,7 @@ const insertMatch = (match, phone, callback) => {
     match.winner,
     match.loser,
     match.score,
+    match.picture,
     phone,
   ];
 
@@ -50,9 +51,10 @@ const getAll = (phone, callback) => {
 
 app.get('/match/:phoneid', (req, res) => {
   getAll(req.params.phoneid, (err, result) => {
-    if (err)
+    if (err) {
       res.status(403).send("bad request");
-    else {
+      console.error(err);
+    } else {
       console.log(`${req.params.phoneid} asked for matches`);
       togive = result.map((val) => {
         delete val.phoneid;

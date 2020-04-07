@@ -1,5 +1,6 @@
 package com.speedphoenix.aestivius;
 
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.provider.BaseColumns;
 
@@ -45,7 +46,8 @@ public class Match implements Comparable<Match> {
                 "Quai de Grenelle",
                 denom + String.valueOf(winner),
                 denom + String.valueOf(loser),
-                String.valueOf(winscore) + " : " + String.valueOf(loserscore));
+                String.valueOf(winscore) + " : " + String.valueOf(loserscore),
+                null);
     }
 
     private static String makeDetails(int position) {
@@ -75,17 +77,24 @@ public class Match implements Comparable<Match> {
     @NonNull
     private String finalScore;
 
-    public Match(Date date, String location, String winner, String loser, String finalScore) {
+    private String picturePath;
+
+    @Ignore
+    private Bitmap bitmap;
+
+    public Match(Date date, String location, String winner, String loser, String finalScore, String picturePath) {
         this.date = date;
         this.location = location;
         this.winner = winner;
         this.loser = loser;
         this.finalScore = finalScore;
+        this.picturePath = picturePath;
+        this.bitmap = null;
     }
 
     @Ignore
-    public Match(Date date, String location, String winner, String loser, String finalScore, long id) {
-        this(date, location, winner, loser, finalScore);
+    public Match(Date date, String location, String winner, String loser, String finalScore, String picturePath, long id) {
+        this(date, location, winner, loser, finalScore, picturePath);
         this.id = id;
     }
 
@@ -145,6 +154,22 @@ public class Match implements Comparable<Match> {
         this.id = id;
     }
 
+    public String getPicturePath() {
+        return picturePath;
+    }
+
+    public void setPicturePath(String picturePath) {
+        this.picturePath = picturePath;
+    }
+
+    public Bitmap getBitmap() {
+        return bitmap;
+    }
+
+    public void setBitmap(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
     @Override
     public int compareTo(Match other) {
         long diff = this.getDateTimestamp() - other.getDateTimestamp();
@@ -164,5 +189,6 @@ public class Match implements Comparable<Match> {
         public static final String COLUMN_NAME_WINNER = "winner";
         public static final String COLUMN_NAME_LOSER = "loser";
         public static final String COLUMN_NAME_SCORE = "score";
+        public static final String COLUMN_NAME_PICTURE = "picture";
     }
 }

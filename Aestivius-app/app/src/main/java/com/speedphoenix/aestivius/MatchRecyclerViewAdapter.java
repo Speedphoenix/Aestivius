@@ -1,14 +1,14 @@
 package com.speedphoenix.aestivius;
 
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.telecom.Call;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -16,22 +16,22 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.speedphoenix.aestivius.Match.MatchEntry;
 import com.speedphoenix.aestivius.MatchFragment.OnListFragmentInteractionListener;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.Callable;
-
-import android.os.Handler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Match} and makes a call to the
@@ -41,6 +41,8 @@ import org.json.JSONObject;
 public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecyclerViewAdapter.ViewHolder> {
 
     private List<Match> mValues;
+    private List<Bitmap> toFree;
+    private Set<ImageView> usedImageViews = new HashSet<>();
     private final OnListFragmentInteractionListener mListener;
     private Handler handler;
 
@@ -75,11 +77,36 @@ public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecycler
         }
     }
 
+    // this is to be able to recycle every bitmap later
+    void rememberBitmaps() {
+        toFree = new ArrayList<>();
+        for (int i = 0; i < mValues.size(); i++) {
+            Bitmap inter = mValues.get(i).getBitmap();
+            if (inter != null)
+                toFree.add(inter);
+            mValues.get(i).setBitmap(null);
+        }
+    }
+
+    void recycleBitmaps() {
+        for (ImageView el : usedImageViews) {
+            el.setImageDrawable(null);
+        }
+        usedImageViews = new HashSet<>();
+
+        for (int i = 0; i < toFree.size(); i++) {
+            toFree.get(i).recycle();
+            toFree.set(i, null);
+        }
+    }
+
+
     public void refreshLocalList() {
         final MatchRecyclerViewAdapter adapter = this;
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
+                rememberBitmaps();
                 mValues = MainActivity.getDbHelper().getAllMatches();
                 Collections.sort(mValues);
                 Collections.reverse(mValues);
@@ -87,6 +114,7 @@ public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecycler
                     @Override
                     public void run() {
                         adapter.notifyDataSetChanged();
+                        recycleBitmaps();
                     }
                 });
             }
@@ -107,15 +135,17 @@ public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecycler
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
+                        rememberBitmaps();
                         mValues = new ArrayList<>();
                         for (int i = 0; i < response.length(); i++) {
                             try {
                                 JSONObject nextMatch = response.getJSONObject(i);
-                                mValues.add(new Match(new Date(nextMatch.getLong("date")),
-                                        nextMatch.getString("location"),
-                                        nextMatch.getString("winner"),
-                                        nextMatch.getString("loser"),
-                                        nextMatch.getString("score"),
+                                mValues.add(new Match(new Date(nextMatch.getLong(MatchEntry.COLUMN_NAME_DATE)),
+                                        nextMatch.getString(MatchEntry.COLUMN_NAME_LOCATION),
+                                        nextMatch.getString(MatchEntry.COLUMN_NAME_WINNER),
+                                        nextMatch.getString(MatchEntry.COLUMN_NAME_LOSER),
+                                        nextMatch.getString(MatchEntry.COLUMN_NAME_SCORE),
+                                        nextMatch.getString(MatchEntry.COLUMN_NAME_PICTURE),
                                         nextMatch.getInt("localid")));
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -127,6 +157,7 @@ public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecycler
                                 @Override
                                 public void run() {
                                     adapter.notifyDataSetChanged();
+                                    recycleBitmaps();
                                 }
                             });
                         }
@@ -148,7 +179,7 @@ public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecycler
             return BUTTON_VIEW;
     }
 
-        @Override
+    @Override
     public void onBindViewHolder(final ViewHolder anyholder, int position) {
 
         if (anyholder instanceof MatchViewHolder) {
@@ -160,6 +191,16 @@ public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecycler
             holder.mLocationView.setText(holder.mItem.getLocation());
             holder.mScoreView.setText(holder.mItem.getFinalScore());
             holder.mWinnerView.setText(holder.mItem.getWinner());
+
+            if (holder.mItem.getPicturePath() != null) {
+                if (holder.mItem.getBitmap() == null) {
+                    int targetW = (int) appContext.getResources().getDimension(R.dimen.picture_match_creation_width);
+                    int targetH = (int) appContext.getResources().getDimension(R.dimen.picture_match_creation_height);
+                    holder.mItem.setBitmap(SomeUtils.getPic(holder.mItem.getPicturePath(), targetW, targetH));
+                }
+                holder.mImageView.setImageBitmap(holder.mItem.getBitmap());
+                usedImageViews.add(holder.mImageView);
+            }
 
             // this is currently not used, but might be one day
             holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -203,6 +244,7 @@ public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecycler
         public final TextView mDateView;
         public final TextView mLocationView;
         public final TextView mScoreView;
+        public final ImageView mImageView;
 
         public Match mItem;
 
@@ -213,6 +255,7 @@ public class MatchRecyclerViewAdapter extends RecyclerView.Adapter<MatchRecycler
             mDateView = (TextView) view.findViewById(R.id.date);
             mLocationView = (TextView) view.findViewById(R.id.location);
             mScoreView = (TextView) view.findViewById(R.id.score);
+            mImageView = (ImageView) view.findViewById(R.id.matchpicture);
         }
 
         @Override

@@ -99,6 +99,13 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
             android:textAppearance="?attr/textAppearanceListItem" />
+
+
+        <ImageView
+            android:layout_width="@dimen/picture_match_card_width"
+            android:layout_height="@dimen/picture_match_card_height"
+            android:id="@+id/matchpicture" />
     </LinearLayout>
+
 
 </LinearLayout>

@@ -4,52 +4,59 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.provider.MediaStore;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import com.speedphoenix.aestivius.Match.MatchEntry;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.app.ActivityCompat;
-
-import android.os.Handler;
-import android.text.TextUtils;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import org.intellij.lang.annotations.JdkConstants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
+
+// note: most code to save a picture was taken from https://developer.android.com/training/camera/photobasics.html
 
 public class CreateMatchActivity extends AppCompatActivity implements LocationListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 40;
+    public static final int REQUEST_IMAGE_CAPTURE = 3;
 
     TextView loserView;
     TextView winnerView;
     TextView dateView;
     TextView locationView;
     TextView scoreView;
+    TextView picturePrompt;
+    ImageView imageView;
+    View pictureLayout;
     String location;
     Date date;
     Location locatedlocation;
@@ -57,6 +64,10 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
     LocationManager locationManager;
     String provider;
     Criteria criteria;
+    String currentPhotoPath;
+    boolean gotPicture;
+    Bitmap bitmap = null;
+
 
     public boolean hasPermissions() {
         return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -72,12 +83,27 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
         dateView = (TextView) findViewById(R.id.date);
         locationView = (TextView) findViewById(R.id.location);
         scoreView = (TextView) findViewById(R.id.scoreinput);
+        imageView = (ImageView) findViewById(R.id.picture);
+        picturePrompt = (TextView) findViewById(R.id.pictureprompt);
         date = new Date();
         dateView.setText(date.toString());
         location = "14 rue de la Boustifaille";
         locationView.setText(location);
         handler = new Handler();
 
+
+        pictureLayout = findViewById(R.id.takepicturelayout);
+        pictureLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dispatchTakePicture();
+            }
+        });
+        gotPicture = false;
+
+        PackageManager packageManager = this.getPackageManager();
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
+            ;//do stuff
 
         // Get the location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -154,7 +180,13 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
                     break;
                 }
 
-                final Match newMatch = new Match(date, location, winner, loser, score);
+                // this could happen if we have permission to create a file but not to take a picture
+                // in this case we don't want it
+                if (!gotPicture)
+                    currentPhotoPath = null;
+
+                // TODO, have the actual damned picture
+                final Match newMatch = new Match(date, location, winner, loser, score, currentPhotoPath);
                 saveMatchExternally(newMatch);
 
                 AsyncTask.execute(new Runnable() {
@@ -176,6 +208,11 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
 
                         helper.insertMatch(newMatch);
 
+                        if (bitmap != null) {
+                            bitmap.recycle();
+                            bitmap = null;
+                        }
+
                         finish();
                     }
                 });
@@ -190,13 +227,13 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
 
         JSONObject object = new JSONObject();
         try {
-            //input your API parameters
-            object.put("_id", match.getId());
-            object.put("date", match.getDateTimestamp());
-            object.put("location", match.getLocation());
-            object.put("winner", match.getWinner());
-            object.put("loser", match.getLoser());
-            object.put("score", match.getFinalScore());
+            object.put(MatchEntry._ID, match.getId());
+            object.put(MatchEntry.COLUMN_NAME_DATE, match.getDateTimestamp());
+            object.put(MatchEntry.COLUMN_NAME_LOCATION, match.getLocation());
+            object.put(MatchEntry.COLUMN_NAME_WINNER, match.getWinner());
+            object.put(MatchEntry.COLUMN_NAME_LOSER, match.getLoser());
+            object.put(MatchEntry.COLUMN_NAME_SCORE, match.getFinalScore());
+            object.put(MatchEntry.COLUMN_NAME_PICTURE, match.getPicturePath());
         } catch (JSONException e) {
             e.printStackTrace();
             return;
@@ -215,6 +252,91 @@ public class CreateMatchActivity extends AppCompatActivity implements LocationLi
         });
         requestQueue.add(jsonObjectRequest);
     }
+
+    // note: most code to save a picture was taken from https://developer.android.com/training/camera/photobasics.html
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+    public void dispatchTakePicture() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.speedphoenix.aestivius.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            /*
+            // this is to get a thumbnail
+            Bundle extras = data.getExtras();
+            imageBitmap = (Bitmap) extras.get("data");
+            imageView.setImageBitmap(imageBitmap);
+            */
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    gotPicture = true;
+                    int targetW = (int) getResources().getDimension(R.dimen.picture_match_creation_width);
+                    int targetH = (int) getResources().getDimension(R.dimen.picture_match_creation_height);
+                    if (bitmap != null)
+                        bitmap.recycle();
+                    bitmap = SomeUtils.getPic(currentPhotoPath, targetW, targetH);
+                    imageView.setImageBitmap(bitmap);
+                    picturePrompt.setText(R.string.change_picture);
+                }
+            });
+            // galleryAddPic();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (bitmap != null) {
+            bitmap.recycle();
+            bitmap = null;
+        }
+    }
+
+    /*
+    //this makes the picture visible by the user outside the app (from his photo gallery)
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(currentPhotoPath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
+    }
+    */
 
     @Override
     public void onLocationChanged(Location location) {

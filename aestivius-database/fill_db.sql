@@ -7,5 +7,6 @@ CREATE TABLE match (
   winner TEXT,
   loser TEXT,
   score TEXT,
+  picture TEXT,
   phoneid TEXT
 );

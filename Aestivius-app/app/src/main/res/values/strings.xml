@@ -9,4 +9,6 @@
     <string name="score_label" translatable="false">Score: </string>
     <string name="validate">Validate</string>
     <string name="loadmore">Load All Matches</string>
+    <string name="take_picture">Tap here to take a picture</string>
+    <string name="change_picture">Tap here to take a different picture</string>
 </resources>
