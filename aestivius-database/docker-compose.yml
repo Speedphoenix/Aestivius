@@ -2,18 +2,20 @@ version: "3"
 
 services:
   postgres:
-    container_name: postgres_container
+    container_name: aestivius_postgres_container
     image: postgres:alpine
     environment:
       - POSTGRES_USER=aestivius
       - POSTGRES_PASSWORD=aestiviuspassword
+      - PGDATA=/data/postgres
     volumes:
-      - /tmp/docker_postgres1:/data/postgres
+      - /var/lib/aestivius/docker_postgres1:/data/postgres
       - ./fill_db.sql:/docker-entrypoint-initdb.d/init.sql
     #ports:
     #  - "5432:5432"
     networks:
       - postgres
+    restart: unless-stopped
 
   server:
     container_name: aestivius_container
@@ -24,9 +26,10 @@ services:
       - PGDATABASE=aestivius
       - PGPASSWORD=aestiviuspassword
     ports:
-      - "8096:8096"
+      - "32768:8096"
     networks:
       - postgres
+    restart: unless-stopped
 
 networks:
   postgres:
