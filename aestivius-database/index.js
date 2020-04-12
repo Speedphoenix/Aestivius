@@ -11,6 +11,9 @@ const pool = new Pool({
   port: process.env.PGPORT || 5432,
 });
 
+console.error(process.env.PGHOST);
+console.error(process.env);
+
 
 const app = express();
 const port = process.env.PORT || '8096';
@@ -39,7 +42,7 @@ const insertMatch = (match, phone, callback) => {
 };
 
 const getAll = (phone, callback) => {
-  pool.query('SELECT * FROM match WHERE phoneid=$1', [ phone ], (err, res) => {
+  pool.query('SELECT * FROM match WHERE phoneid=$1', [ phone ], (err, res) => {
     if (err) {
       callback(err, res);
     } else {
@@ -48,10 +51,17 @@ const getAll = (phone, callback) => {
   });
 };
 
+const printErrStack = (err) => {
+  console.error(err.name + ": " + err.message);
+  console.error(err.stack);
+};
+
 app.get('/match/:phoneid', (req, res) => {
   getAll(req.params.phoneid, (err, result) => {
-    if (err)
-      res.status(403).send("bad request");
+    if (err) {
+      res.status(403).send(err.toString());
+      printErrStack(err);
+    }
     else {
       console.log(`${req.params.phoneid} asked for matches`);
       togive = result.map((val) => {
@@ -66,12 +76,17 @@ app.get('/match/:phoneid', (req, res) => {
 
 app.post('/match/:phoneid', (req, res) => {
   console.log(`${req.params.phoneid} is creating a match`);
-  insertMatch(req.body, req.params.phoneid, (result) => {
-    console.log(`${req.params.phoneid} created a match`);
-    togive = {
-      result: "success"
+  insertMatch(req.body, req.params.phoneid, (err, result) => {
+    if (err) {
+      res.status(403).send(err.toString());
+      printErrStack(err);
+    } else {
+      console.log(`${req.params.phoneid} created a match`);
+      togive = {
+        result: "success"
+      }
+      res.status(200).json(togive);
     }
-    res.status(200).json(togive);
   });
   // insert the received match into the database
 });

@@ -9,3 +9,6 @@ CREATE TABLE match (
   score TEXT,
   phoneid TEXT
 );
+
+-- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO aestivius;
+-- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO aestivius;

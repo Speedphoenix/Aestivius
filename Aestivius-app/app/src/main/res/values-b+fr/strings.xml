@@ -5,6 +5,6 @@
     <string name="view_previous_matches">Voir les matchs précédents</string>
     <string name="loser_label">Perdant: </string>
     <string name="winner_label">Gagnant: </string>
-    <string name="validate">Validater</string>
+    <string name="validate">Valider</string>
     <string name="loadmore">Charger tous les matchs</string>
 </resources>
